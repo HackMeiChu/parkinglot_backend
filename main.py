@@ -7,14 +7,15 @@ load_dotenv()
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
+from sqlalchemy import event
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, Depends
 
 sys.path.append(os.path.dirname(__file__))
 
-from utils.db_connect import engine, get_db
+from utils.db_connect import engine, get_db, insert_parking_info
 from utils.scheduler import get_parking_data
-from schemas.parkinglog_db import Base, ParkinglotOrigin
+from schemas.parkinglog_db import Base, ParkinglotInfo
 
 
 scheduler = BackgroundScheduler(timezone="Asia/Taipei")
@@ -22,6 +23,9 @@ app = FastAPI()
 
 
 # database
+# insert data right after the table creation
+event.listen(ParkinglotInfo.__table__, 'after_create', insert_parking_info)
+
 Base.metadata.create_all(bind=engine)
 
 
