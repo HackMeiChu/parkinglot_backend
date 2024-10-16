@@ -61,7 +61,7 @@ def get_parkinglot(db: Session = Depends(get_db)):
 
 
 # get parking space for specific parking lot
-@app.get("/parking/space", response_model=List[schema.ParkinglotInfo])
+@app.get("/parking/space/{parking_id}", response_model=List[schema.ParkinglotSpace])
 def get_parkingspace(parking_id: int, db: Session = Depends(get_db)):
     return (
         db.query(model.ParkinglotSpace)
