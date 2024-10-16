@@ -1,5 +1,9 @@
 import os
 import sys
+from dotenv import load_dotenv
+
+# load .env file
+load_dotenv()
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -11,6 +15,7 @@ sys.path.append(os.path.dirname(__file__))
 from utils.db_connect import engine, get_db
 from utils.scheduler import get_parking_data
 from schemas.parkinglog_db import Base, ParkinglotOrigin
+
 
 scheduler = BackgroundScheduler(timezone="Asia/Taipei")
 app = FastAPI()
