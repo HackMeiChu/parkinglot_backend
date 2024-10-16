@@ -6,7 +6,7 @@ from sqlalchemy.orm import sessionmaker
 
 from utils.fetch_parking import fetch_parking
 from utils.process import process_parking_data
-from schemas.parkinglog_db import ParkinglotInfo
+from db import model
 
 DB_HOST = str(os.getenv("DB_HOST"))
 DB_PORT = str(os.getenv("DB_PORT"))
@@ -41,11 +41,11 @@ def insert_parking_info(target, connection, **kw):
     parkinglot_models = []
     for p in parkinglot_li:
         parkinglot_models.append(
-            ParkinglotInfo(
+            model.ParkinglotInfo(
                 **{
                     k: v
                     for k, v in p.dict().items()
-                    if k in ParkinglotInfo.__table__.columns
+                    if k in model.ParkinglotInfo.__table__.columns
                 }
             )
         )

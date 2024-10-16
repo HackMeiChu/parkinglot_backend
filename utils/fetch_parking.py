@@ -7,7 +7,7 @@ if __name__ == "__main__":
 
 import requests
 
-from schemas.parkinglot import In_parking_lot_official_all
+from db import schema
 
 
 # URL of the JSON data
@@ -15,7 +15,7 @@ url_official = "https://hispark.hccg.gov.tw/OpenData/GetParkInfo?1111104155049"
 url = "https://ocam.live/c_hsinchu_city_parkinglots.json"
 
 
-def fetch_parking() -> In_parking_lot_official_all:
+def fetch_parking() -> schema.In_parking_lot_official_all:
     try:
         response = requests.get(url_official)
         response.raise_for_status()
@@ -24,7 +24,7 @@ def fetch_parking() -> In_parking_lot_official_all:
 
         # Print or process the data as needed
 
-        parkinglot_info = In_parking_lot_official_all.model_validate({"data": data})
+        parkinglot_info = schema.In_parking_lot_official_all.model_validate({"data": data})
 
         return parkinglot_info
 

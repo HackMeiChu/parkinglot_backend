@@ -9,11 +9,7 @@ from datetime import datetime
 from typing import Tuple, List
 
 from utils.fetch_parking import fetch_parking
-from schemas.parkinglot import (
-    In_parking_lot_official_all,
-    In_parking_lot_official,
-    Out_parking_lot,
-)
+from db import schema
 
 
 def match_price(charge_des: str, carTotal: int, motoTotal: int) -> Tuple:
@@ -60,7 +56,7 @@ def extract_date_time(dateTime: str) -> Tuple[datetime.date, datetime.time]:
     return date, time
 
 
-def transform_each_data(source: In_parking_lot_official) -> Out_parking_lot:
+def transform_each_data(source: schema.In_parking_lot_official) -> schema.Out_parking_lot:
     # process charge fee for weekdays and holidays
     carChargeFeeWeek = 0
     carChargeFeeHoli = 0
@@ -77,7 +73,7 @@ def transform_each_data(source: In_parking_lot_official) -> Out_parking_lot:
     date, time = extract_date_time(source.updatetime)
     startHour, endHour = extract_business_hours(source.businesshours)
 
-    out = Out_parking_lot(
+    out = schema.Out_parking_lot(
         name=source.parkingname,
         address=source.address,
         startHour=startHour,
@@ -100,8 +96,8 @@ def transform_each_data(source: In_parking_lot_official) -> Out_parking_lot:
 
 
 def process_parking_data(
-    source_data: In_parking_lot_official_all,
-) -> List[Out_parking_lot]:
+    source_data: schema.In_parking_lot_official_all,
+) -> List[schema.Out_parking_lot]:
 
     out_li = []
     for source_datum in source_data.data:

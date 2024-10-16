@@ -5,7 +5,7 @@ from starlette.types import ASGIApp, Receive, Scope, Send
 from utils.fetch_parking import fetch_parking
 from utils.process import process_parking_data
 from utils.db_connect import SessionLocal
-from schemas.parkinglog_db import ParkinglotSpace
+from db import model
 
 from datetime import datetime
 
@@ -18,11 +18,11 @@ def get_parking_data():
     parkinglot_models = []
     for p in parkinglot_li:
         parkinglot_models.append(
-            ParkinglotSpace(
+            model.ParkinglotSpace(
                 **{
                     k: v
                     for k, v in p.dict().items()
-                    if k in ParkinglotSpace.__table__.columns
+                    if k in model.ParkinglotSpace.__table__.columns
                 }
             )
         )

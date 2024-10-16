@@ -10,7 +10,7 @@ class In_parking_lot_official(BaseModel):
     address: str = Field(..., validation_alias="ADDRESS")
     businesshours: str = Field(..., validation_alias="BUSINESSHOURS")
     weekdays: str = Field(..., validation_alias="WEEKDAYS")
-    holiday: str = Field(..., validation_alias="HOLIDAY")
+    holiday: str = Field(..., validation_alias="HOLIDAY") 
     freequantitybig: int = Field(..., validation_alias="FREEQUANTITYBIG")
     totalquantitybig: int = Field(..., validation_alias="TOTALQUANTITYBIG")
     freequantity: int = Field(..., validation_alias="FREEQUANTITY")
@@ -61,3 +61,28 @@ class Out_parking_lot(BaseModel):
     longitude: str
     updateDate: date
     updateTime: time
+
+
+class ParkinglotInfo(BaseModel):
+    id: int
+    name: str
+    address: str
+    startHour: int
+    endHour: int
+    carChargeFeeWeek: int
+    carChargeFeeHoli: int
+    motoChargeFeeWeek: int
+    motoChargeFeeHoli: int
+    latitude: str
+    longitude: str
+
+
+class ParkinglotSpace(BaseModel):
+    id: int
+    carAvail: int
+    carTotal: int
+    motoAvail: int
+    motoTotal: int
+    updateDate: date
+    updateTime: time
+    parkinglot_id: int
