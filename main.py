@@ -71,8 +71,8 @@ def get_parkingspace(parking_id: int, db: Session = Depends(get_db)):
 
 
 # get parking space for specific parking lot
-@app.get("/parking/space/{parking_id}/latest", summary="get latest space for one id",response_model=schema.ParkinglotSpace)
-def get_parkingspace(parking_id: int, db: Session = Depends(get_db)):
+@app.get("/parking/space/{parking_id}/latest", summary="get latest space for one id", response_model=schema.ParkinglotSpace)
+def get_each_latest_parkingspace(parking_id: int, db: Session = Depends(get_db)):
     return (
         db.query(model.ParkinglotSpace)
         .filter(model.ParkinglotSpace.parkinglot_id == parking_id)
@@ -85,8 +85,8 @@ def get_parkingspace(parking_id: int, db: Session = Depends(get_db)):
 
 
 # get parking space for specific parking lot
-@app.get("/parking/space", summary="get all latest space" , response_model=List[schema.ParkinglotSpace])
-def get_parkingspace(db: Session = Depends(get_db)):
+@app.get("/parking/space", summary="get all latest space", response_model=List[schema.ParkinglotSpace])
+def get_all_latest_parkingspace(db: Session = Depends(get_db)):
     """
     get the latest data for all parkinglots
     """
