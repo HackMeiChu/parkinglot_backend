@@ -4,7 +4,7 @@ if __name__ == "__main__":
 
     sys.path.append(os.path.join(os.path.dirname(__file__), os.path.pardir))
 
-from sqlalchemy import Column, Integer, String, Date, Time, ForeignKey
+from sqlalchemy import Column, Integer, String, Date, Time, ForeignKey, Float
 from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
@@ -22,8 +22,8 @@ class ParkinglotInfo(Base):
     carChargeFeeHoli = Column(Integer, nullable=False)
     motoChargeFeeWeek = Column(Integer, nullable=False)
     motoChargeFeeHoli = Column(Integer, nullable=False)
-    latitude = Column(String, nullable=False)
-    longitude = Column(String, nullable=False)
+    latitude = Column(Float, nullable=False)
+    longitude = Column(Float, nullable=False)
 
 
 class ParkinglotSpace(Base):
@@ -35,5 +35,6 @@ class ParkinglotSpace(Base):
     motoAvail = Column(Integer, nullable=False)
     motoTotal = Column(Integer, nullable=False)
     updateDate = Column(Date, nullable=False)
+    updateDay = Column(Integer, nullable=False)
     updateTime = Column(Time, nullable=False)
     parkinglot_id = Column(Integer, ForeignKey("parkinglotInfo.id", ondelete="cascade"))

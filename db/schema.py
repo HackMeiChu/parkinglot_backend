@@ -57,9 +57,10 @@ class Out_parking_lot(BaseModel):
     carChargeFeeHoli: int
     motoChargeFeeWeek: int
     motoChargeFeeHoli: int
-    latitude: str
-    longitude: str
+    latitude: float
+    longitude: float
     updateDate: date
+    updateDay: int
     updateTime: time
 
 
@@ -73,8 +74,8 @@ class ParkinglotInfo(BaseModel):
     carChargeFeeHoli: int
     motoChargeFeeWeek: int
     motoChargeFeeHoli: int
-    latitude: str
-    longitude: str
+    latitude: float
+    longitude: float
 
 
 class ParkinglotSpace(BaseModel):
@@ -84,5 +85,6 @@ class ParkinglotSpace(BaseModel):
     motoAvail: int
     motoTotal: int
     updateDate: date
+    updateDay: int = Field(description="0~6 represent Mon. to Sun.")
     updateTime: time
     parkinglot_id: int

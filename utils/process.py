@@ -43,17 +43,18 @@ def extract_business_hours(hour_str: str) -> Tuple[int]:
     return int(hours[0]), int(hours[1])
 
 
-def extract_date_time(dateTime: str) -> Tuple[datetime.date, datetime.time]:
+def extract_date_time_day(dateTime: str) -> Tuple[datetime.date, int, datetime.time]:
 
     try:
         parsed_datetime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M:%S.%f")
     except:
         parsed_datetime = datetime.strptime(dateTime, "%Y-%m-%dT%H:%M:%S")
 
+    day = parsed_datetime.weekday()
     date = parsed_datetime.date()
     time = parsed_datetime.time().replace(second=0, microsecond=0)
 
-    return date, time
+    return date, day, time
 
 
 def transform_each_data(source: schema.In_parking_lot_official) -> schema.Out_parking_lot:
@@ -70,7 +71,7 @@ def transform_each_data(source: schema.In_parking_lot_official) -> schema.Out_pa
         source.holiday, source.totalquantity, source.totalquantitymot
     )
 
-    date, time = extract_date_time(source.updatetime)
+    date, day, time = extract_date_time_day(source.updatetime)
     startHour, endHour = extract_business_hours(source.businesshours)
 
     out = schema.Out_parking_lot(
@@ -86,9 +87,10 @@ def transform_each_data(source: schema.In_parking_lot_official) -> schema.Out_pa
         carChargeFeeHoli=carChargeFeeHoli,
         motoChargeFeeWeek=motoChargeFeeWeek,
         motoChargeFeeHoli=motoChargeFeeHoli,
-        latitude=source.latitude,
-        longitude=source.longitude,
+        latitude=float(source.latitude),
+        longitude=float(source.longitude),
         updateDate=date,
+        updateDay=day,
         updateTime=time,
     )
 
