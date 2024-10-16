@@ -18,39 +18,37 @@ def get_parking_data():
     parkinglot_models = []
     for p in parkinglot_li:
         # get parkinglot id
-        parking_id = db.query(model.ParkinglotInfo).filter(model.ParkinglotInfo.name == p.name).first().id
+        parking_id = (
+            db.query(model.ParkinglotInfo)
+            .filter(model.ParkinglotInfo.name == p.name)
+            .first()
+            .id
+        )
         p_dict = p.dict()
         p_dict["parkinglot_id"] = parking_id
-        parkinglot_models.append(
-            model.ParkinglotSpace(
-                **{
-                    k: v
-                    for k, v in p_dict.items()
-                    if k in model.ParkinglotSpace.__table__.columns
-                }
+
+        # check if no duplicate data exist (id, data, and time same)
+        if (
+            db.query(model.ParkinglotSpace)
+            .filter(
+                model.ParkinglotSpace.parkinglot_id == p_dict["parkinglot_id"],
+                model.ParkinglotSpace.updateDate == p_dict["updateDate"],
+                model.ParkinglotSpace.updateTime == p_dict["updateTime"]
             )
-        )
-    print(parkinglot_models[0].parkinglot_id)
+            .first()
+            is None
+        ):
+            parkinglot_models.append(
+                model.ParkinglotSpace(
+                    **{
+                        k: v
+                        for k, v in p_dict.items()
+                        if k in model.ParkinglotSpace.__table__.columns
+                    }
+                )
+            )
 
     db.add_all(parkinglot_models)
     db.commit()
 
     print("Fetch data and save at: ", datetime.now())
-
-
-class SchedulerMiddleware:
-    def __init__(
-        self,
-        app: ASGIApp,
-        scheduler: BackgroundScheduler,
-    ) -> None:
-        self.app = app
-        self.scheduler = scheduler
-
-    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        async with self.scheduler:
-            await self.scheduler.add_job(
-                get_parking_data, IntervalTrigger(seconds=1), id="data"
-            )
-            await self.scheduler.start()
-            await self.app(scope, receive, send)
