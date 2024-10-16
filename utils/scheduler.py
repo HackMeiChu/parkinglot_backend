@@ -17,15 +17,20 @@ def get_parking_data():
     parkinglot_li = process_parking_data(data)
     parkinglot_models = []
     for p in parkinglot_li:
+        # get parkinglot id
+        parking_id = db.query(model.ParkinglotInfo).filter(model.ParkinglotInfo.name == p.name).first().id
+        p_dict = p.dict()
+        p_dict["parkinglot_id"] = parking_id
         parkinglot_models.append(
             model.ParkinglotSpace(
                 **{
                     k: v
-                    for k, v in p.dict().items()
+                    for k, v in p_dict.items()
                     if k in model.ParkinglotSpace.__table__.columns
                 }
             )
         )
+    print(parkinglot_models[0].parkinglot_id)
 
     db.add_all(parkinglot_models)
     db.commit()
