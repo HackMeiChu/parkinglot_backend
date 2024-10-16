@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends
-from sqlalchemy.orm import Session
-from sqlalchemy import event
+from sqlalchemy.orm import Session, aliased
+from sqlalchemy import event, func
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
 import os
@@ -13,9 +13,9 @@ sys.path.append(os.path.dirname(__file__))
 # load .env file
 load_dotenv()
 
-from db import schema, model
-from utils.scheduler import get_parking_data
 from utils.db_connect import engine, get_db, insert_parking_info
+from utils.scheduler import get_parking_data
+from db import schema, model
 
 
 scheduler = BackgroundScheduler(timezone="Asia/Taipei")
@@ -66,5 +66,48 @@ def get_parkingspace(parking_id: int, db: Session = Depends(get_db)):
     return (
         db.query(model.ParkinglotSpace)
         .filter(model.ParkinglotSpace.parkinglot_id == parking_id)
+        .all()
+    )
+
+
+# get parking space for specific parking lot
+@app.get("/parking/space/{parking_id}/latest", summary="get latest space for one id",response_model=schema.ParkinglotSpace)
+def get_parkingspace(parking_id: int, db: Session = Depends(get_db)):
+    return (
+        db.query(model.ParkinglotSpace)
+        .filter(model.ParkinglotSpace.parkinglot_id == parking_id)
+        .order_by(
+            model.ParkinglotSpace.updateDate.desc(),
+            model.ParkinglotSpace.updateTime.desc(),
+        )
+        .first()
+    )
+
+
+# get parking space for specific parking lot
+@app.get("/parking/space", summary="get all latest space" , response_model=List[schema.ParkinglotSpace])
+def get_parkingspace(db: Session = Depends(get_db)):
+    """
+    get the latest data for all parkinglots
+    """
+    subquery = (
+        db.query(
+            model.ParkinglotSpace,
+            func.row_number().over(
+                partition_by=model.ParkinglotSpace.parkinglot_id,
+                order_by=(
+                    model.ParkinglotSpace.updateDate.desc(),
+                    model.ParkinglotSpace.updateTime.desc()
+                )
+            ).label("row_number")
+        ).subquery()
+    )
+
+    # Alias the subquery for easier referencing
+    aliased_parkinglot_space = aliased(model.ParkinglotSpace, subquery)
+
+    return (
+        db.query(aliased_parkinglot_space)
+        .filter(subquery.c.row_number == 1)
         .all()
     )
