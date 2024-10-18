@@ -3,19 +3,11 @@ from sqlalchemy.orm import Session, aliased
 from sqlalchemy import event, func
 from apscheduler.triggers.interval import IntervalTrigger
 from apscheduler.schedulers.background import BackgroundScheduler
-import os
-import sys
-from dotenv import load_dotenv
 from typing import List
 
-sys.path.append(os.path.dirname(__file__))
-
-# load .env file
-load_dotenv()
-
-from utils.db_connect import engine, get_db, insert_parking_info
-from utils.scheduler import get_parking_data
 from db import schema, model
+from utils.scheduler import get_parking_data
+from utils.db_connect import engine, get_db, insert_parking_info
 
 
 scheduler = BackgroundScheduler(timezone="Asia/Taipei")
