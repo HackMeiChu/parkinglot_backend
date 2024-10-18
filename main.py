@@ -63,7 +63,11 @@ def get_parkingspace(parking_id: int, db: Session = Depends(get_db)):
 
 
 # get parking space for specific parking lot
-@app.get("/parking/space/{parking_id}/latest", summary="get latest space for one id", response_model=schema.ParkinglotSpace)
+@app.get(
+    "/parking/space/{parking_id}/latest",
+    summary="get latest space for one id",
+    response_model=schema.ParkinglotSpace,
+)
 def get_each_latest_parkingspace(parking_id: int, db: Session = Depends(get_db)):
     return (
         db.query(model.ParkinglotSpace)
@@ -77,29 +81,31 @@ def get_each_latest_parkingspace(parking_id: int, db: Session = Depends(get_db))
 
 
 # get parking space for specific parking lot
-@app.get("/parking/space", summary="get all latest space", response_model=List[schema.ParkinglotSpace])
+@app.get(
+    "/parking/space",
+    summary="get all latest space",
+    response_model=List[schema.ParkinglotSpace],
+)
 def get_all_latest_parkingspace(db: Session = Depends(get_db)):
     """
     get the latest data for all parkinglots
     """
-    subquery = (
-        db.query(
-            model.ParkinglotSpace,
-            func.row_number().over(
-                partition_by=model.ParkinglotSpace.parkinglot_id,
-                order_by=(
-                    model.ParkinglotSpace.updateDate.desc(),
-                    model.ParkinglotSpace.updateTime.desc()
-                )
-            ).label("row_number")
-        ).subquery()
-    )
+    subquery = db.query(
+        model.ParkinglotSpace,
+        func.row_number()
+        .over(
+            partition_by=model.ParkinglotSpace.parkinglot_id,
+            order_by=(
+                model.ParkinglotSpace.updateDate.desc(),
+                model.ParkinglotSpace.updateTime.desc(),
+            ),
+        )
+        .label("row_number"),
+    ).subquery()
 
     # Alias the subquery for easier referencing
     aliased_parkinglot_space = aliased(model.ParkinglotSpace, subquery)
 
-    return (
-        db.query(aliased_parkinglot_space)
-        .filter(subquery.c.row_number == 1)
+    return db.query(aliased_parkinglot_space).filter(subquery.c.row_number == 1).all()
         .all()
     )
