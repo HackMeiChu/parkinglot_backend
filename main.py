@@ -8,6 +8,7 @@ from typing import List
 from db import schema, model
 from utils.scheduler import get_parking_data
 from utils.db_connect import engine, get_db, insert_parking_info
+from utils.nearby import cal_dist
 
 
 scheduler = BackgroundScheduler(timezone="Asia/Taipei")
@@ -107,5 +108,69 @@ def get_all_latest_parkingspace(db: Session = Depends(get_db)):
     aliased_parkinglot_space = aliased(model.ParkinglotSpace, subquery)
 
     return db.query(aliased_parkinglot_space).filter(subquery.c.row_number == 1).all()
+
+
+# return nearby parking lot by given lat and lng
+@app.get(
+    "/parking/nearby",
+    summary="get all nearby parking space",
+    response_model=List[schema.ParkinglotSpace],
+)
+def get_nearby_parkinglot_space(lat: float, lng: float, db: Session = Depends(get_db)):
+    """
+    Provide the latitude(lat) and longitude(lng) of the site
+    get the space of the parking lot within 500m (0.005 for lat and lng)
+    for testing: lat: 24.807, lng: 120.969783
+    """
+    distance: float = 0.005  # 500m
+    min_lat, max_lat = lat - distance, lat + distance
+    min_lng, max_lng = lng - distance, lng + distance
+
+    # get all parking lots
+    nearby_parkinglot = (
+        db.query(model.ParkinglotInfo)
+        .filter(
+            model.ParkinglotInfo.latitude >= min_lat,
+            model.ParkinglotInfo.latitude <= max_lat,
+            model.ParkinglotInfo.longitude >= min_lng,
+            model.ParkinglotInfo.longitude <= max_lng,
+        )
         .all()
     )
+
+    # calculate their distance
+    id_dist_dict: dict = {
+        x.id: cal_dist(x.latitude, x.longitude, lat, lng) for x in nearby_parkinglot
+    }
+
+    sorted_id_li = [
+        k for k, _ in sorted(id_dist_dict.items(), key=lambda item: item[1])
+    ]
+
+    # get the latest space info of the nearby parkinglot
+    subquery = db.query(
+        model.ParkinglotSpace,
+        func.row_number()
+        .over(
+            partition_by=model.ParkinglotSpace.parkinglot_id,
+            order_by=(
+                model.ParkinglotSpace.updateDate.desc(),
+                model.ParkinglotSpace.updateTime.desc(),
+            ),
+        )
+        .label("row_number"),
+    ).subquery()
+
+    # Alias the subquery for easier referencing
+    aliased_parkinglot_space = aliased(model.ParkinglotSpace, subquery)
+
+    nearby_space = (
+        db.query(aliased_parkinglot_space)
+        .filter(subquery.c.row_number == 1, subquery.c.parkinglot_id.in_(sorted_id_li))
+        .all()
+    )
+
+    id_space_dict = {x.parkinglot_id: x for x in nearby_space}
+    print(id_space_dict)
+
+    return [id_space_dict[i] for i in sorted_id_li]
