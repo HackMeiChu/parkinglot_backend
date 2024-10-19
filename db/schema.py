@@ -88,3 +88,17 @@ class ParkinglotSpace(BaseModel):
     updateDay: int = Field(description="0~6 represent Mon. to Sun.")
     updateTime: time
     parkinglot_id: int
+    
+
+class ParkinglotSpacePredict(BaseModel):
+    id: int
+    carAvail: int
+    carAvailPred: int
+    carTotal: int
+    motoAvail: int
+    motoAvailPred: int
+    motoTotal: int
+    updateDate: date
+    updateDay: int = Field(description="0~6 represent Mon. to Sun.")
+    updateTime: time
+    parkinglot_id: int
